@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "gitea": {
+      "command": "node",
+      "args": ["/ruta/a/gitea-mcp/dist/index.js"],
+      "env": {
+        "GITEA_BASE_URL": "https://git.empresa.com",
+        "GITEA_AUTH_TYPE": "token",
+        "GITEA_TOKEN": "tu_token_personal_aqui"
+      }
+    }
+  }
+}
