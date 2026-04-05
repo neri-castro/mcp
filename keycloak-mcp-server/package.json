@@ -1,0 +1,36 @@
+{
+  "name": "keycloak-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol Server para Keycloak Admin REST API",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.4.0",
+    "pg": "^8.11.0",
+    
+    "pino": "^8.17.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.10.0",
+    "@types/pino": "^7.0.5",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0",
+    "msw": "^2.1.0",
+    "ts-node": "^10.9.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
