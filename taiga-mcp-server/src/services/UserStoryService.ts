@@ -6,11 +6,46 @@ import {
 import { withCurrentVersion } from '../utils/occ.js';
 import { logger } from '../utils/logger.js';
 
+interface UserStorySummary {
+  id: number;
+  ref: number;
+  subject: string;
+  status: number | null;
+  status_extra_info: { name: string; color: string; is_closed: boolean } | null;
+  project: number;
+  milestone: number | null;
+  milestone_name: string | null;
+  assigned_to: number | null;
+  assigned_to_extra_info: { full_name_display: string } | null;
+  is_closed: boolean;
+  total_points: number | null;
+  tags: unknown[];
+  created_date: string;
+  modified_date: string;
+}
+
 export class UserStoryService {
   constructor(private readonly repo: UserStoryRepository) {}
 
-  async list(projectId: number, filters?: Record<string, unknown>): Promise<unknown> {
-    return this.repo.list({ project: projectId, ...filters });
+  async list(projectId: number, filters?: Record<string, unknown>): Promise<UserStorySummary[]> {
+    const stories = await this.repo.list({ project: projectId, ...filters }) as Record<string, unknown>[];
+    return stories.map((s) => ({
+      id: s.id as number,
+      ref: s.ref as number,
+      subject: s.subject as string,
+      status: s.status as number | null,
+      status_extra_info: s.status_extra_info as UserStorySummary['status_extra_info'],
+      project: s.project as number,
+      milestone: s.milestone as number | null,
+      milestone_name: s.milestone_name as string | null,
+      assigned_to: s.assigned_to as number | null,
+      assigned_to_extra_info: s.assigned_to_extra_info as UserStorySummary['assigned_to_extra_info'],
+      is_closed: s.is_closed as boolean,
+      total_points: s.total_points as number | null,
+      tags: s.tags as unknown[],
+      created_date: s.created_date as string,
+      modified_date: s.modified_date as string,
+    }));
   }
 
   async get(id: number): Promise<unknown> {

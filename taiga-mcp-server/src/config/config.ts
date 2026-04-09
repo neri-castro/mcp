@@ -25,7 +25,7 @@ export type AppConfig = z.infer<typeof configSchema>;
 function loadConfig(): AppConfig {
   const result = configSchema.safeParse({
     taigaHost: process.env.TAIGA_HOST,
-    taigaApiBaseUrl: process.env.TAIGA_API_BASE_URL ?? `${process.env.TAIGA_HOST}/api/v1`,
+    taigaApiBaseUrl: process.env.TAIGA_API_BASE_URL || `${process.env.TAIGA_HOST}/api/v1`,
     authType: process.env.TAIGA_AUTH_TYPE,
     username: process.env.TAIGA_USERNAME,
     password: process.env.TAIGA_PASSWORD,

@@ -1,11 +1,26 @@
 import { WikiRepository, CreateWikiPageDTO, EditWikiPageDTO, CreateWikiLinkDTO } from '../repositories/WikiRepository.js';
 import { logger } from '../utils/logger.js';
 
+interface WikiPageSummary {
+  id: number;
+  slug: string;
+  project: number;
+  created_date: string;
+  modified_date: string;
+}
+
 export class WikiService {
   constructor(private readonly repo: WikiRepository) {}
 
-  async list(projectId: number): Promise<unknown> {
-    return this.repo.list({ project: projectId });
+  async list(projectId: number): Promise<WikiPageSummary[]> {
+    const pages = await this.repo.list({ project: projectId }) as Record<string, unknown>[];
+    return pages.map((p) => ({
+      id: p.id as number,
+      slug: p.slug as string,
+      project: p.project as number,
+      created_date: p.created_date as string,
+      modified_date: p.modified_date as string,
+    }));
   }
 
   async get(wikiId: number): Promise<unknown> {

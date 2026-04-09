@@ -7,14 +7,41 @@ import { UserStoryRepository } from '../repositories/UserStoryRepository.js';
 import { logger } from '../utils/logger.js';
 import { withCurrentVersion } from '../utils/occ.js';
 
+interface SprintSummary {
+  id: number;
+  name: string;
+  slug: string;
+  project: number;
+  estimated_start: string | null;
+  estimated_finish: string | null;
+  closed: boolean;
+  total_points: number | null;
+  completed_points: number | null;
+  created_date: string;
+  modified_date: string;
+}
+
 export class SprintService {
   constructor(
     private readonly milestoneRepo: MilestoneRepository,
     private readonly userStoryRepo: UserStoryRepository
   ) {}
 
-  async list(projectId: number, closed?: boolean): Promise<unknown> {
-    return this.milestoneRepo.list({ project: projectId, ...(closed !== undefined ? { closed } : {}) });
+  async list(projectId: number, closed?: boolean): Promise<SprintSummary[]> {
+    const sprints = await this.milestoneRepo.list({ project: projectId, ...(closed !== undefined ? { closed } : {}) }) as Record<string, unknown>[];
+    return sprints.map((s) => ({
+      id: s.id as number,
+      name: s.name as string,
+      slug: s.slug as string,
+      project: s.project as number,
+      estimated_start: s.estimated_start as string | null,
+      estimated_finish: s.estimated_finish as string | null,
+      closed: s.closed as boolean,
+      total_points: s.total_points as number | null,
+      completed_points: s.completed_points as number | null,
+      created_date: s.created_date as string,
+      modified_date: s.modified_date as string,
+    }));
   }
 
   async get(sprintId: number): Promise<unknown> {
