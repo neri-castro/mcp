@@ -110,6 +110,13 @@ La descripción debe incluir en Markdown:
     }),
   },
 
+  taiga_task_list_attachments: {
+    description: 'Lista todos los archivos adjuntos de una tarea.',
+    inputSchema: z.object({
+      task_id: z.number(),
+    }),
+  },
+
   taiga_task_watch: {
     description: 'Suscribe al usuario autenticado a notificaciones de la tarea.',
     inputSchema: z.object({

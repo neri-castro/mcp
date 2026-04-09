@@ -22,7 +22,7 @@ export class HistoryService {
     commentId: string,
     comment: string
   ): Promise<unknown> {
-    return this.repo.editComment(entityType, entityId, commentId);
+    return this.repo.editComment(entityType, entityId, commentId, comment);
   }
 
   async deleteComment(

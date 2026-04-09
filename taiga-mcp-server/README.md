@@ -1,7 +1,7 @@
 # taiga-mcp
 
 Model Context Protocol Server para la **Taiga REST API**.
-Expone **71 herramientas** para gestión completa de proyectos ágiles desde un LLM (Claude, GPT-4, etc.).
+Expone **147 herramientas** para gestión completa de proyectos ágiles desde un LLM (Claude, GPT-4, etc.).
 
 ## Stack
 
@@ -72,8 +72,8 @@ Agrega en `claude_desktop_config.json`:
 | Proyectos (10) | `taiga_project_list/create/get/get_by_slug/edit/delete/stats/modules/create_tag/duplicate` |
 | Épicas (16) | `taiga_epic_list/create/get/get_by_ref/edit/delete/bulk_create/link_userstory/unlink_userstory/bulk_link_userstories/list_related_userstories/change_status/add_attachment/list_attachments/watch/filters_data` |
 | Historias de Usuario (16) | `taiga_us_list/create/get/get_by_ref/edit/delete/bulk_create/change_status/assign_to_sprint/move_to_kanban_column/bulk_update_order/bulk_assign_sprint/add_attachment/list_attachments/watch/vote` |
-| Tareas (13) | `taiga_task_list/create/get/get_by_ref/edit/delete/bulk_create/change_status/assign/add_attachment/watch/vote/filters_data` |
-| Issues (17) | `taiga_issue_list/create/get/edit/delete/change_status/change_priority/change_severity/assign/promote_to_us/add_attachment/watch/vote/list_types/list_priorities/list_severities/filters_data` |
+| Tareas (14) | `taiga_task_list/create/get/get_by_ref/edit/delete/bulk_create/change_status/assign/add_attachment/list_attachments/watch/vote/filters_data` |
+| Issues (18) | `taiga_issue_list/create/get/edit/delete/change_status/change_priority/change_severity/assign/promote_to_us/add_attachment/list_attachments/watch/vote/list_types/list_priorities/list_severities/filters_data` |
 | Sprints (10) | `taiga_sprint_list/create/get/edit/delete/stats/add_userstory/remove_userstory/bulk_add_userstories/watch` |
 | Kanban & Estados (10) | `taiga_status_list_epic/us/task/issue/create/edit/delete/reorder`, `taiga_kanban_move_card/bulk_move` |
 | Atributos Custom (6) | `taiga_custom_attr_list/create/edit/delete/get_values/set_values` |

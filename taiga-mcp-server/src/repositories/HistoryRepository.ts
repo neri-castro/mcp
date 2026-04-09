@@ -31,11 +31,12 @@ export class HistoryRepository {
   async editComment(
     entityType: HistoryEntityType,
     entityId: number,
-    commentId: string
+    commentId: string,
+    comment: string
   ): Promise<unknown> {
     const response = await this.client.patch(
       `/history/${entityType}/${entityId}/edit_comment`,
-      {},
+      { comment },
       { params: { id: commentId } }
     );
     return response.data;
