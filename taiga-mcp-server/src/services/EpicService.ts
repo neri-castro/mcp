@@ -140,8 +140,9 @@ export class EpicService implements IEpicReader, IEpicWriter, IEpicRelationManag
     return this.repo.delete(id);
   }
 
-  async bulkCreate(projectId: number, subjects: string[], statusId?: number): Promise<unknown> {
-    return this.repo.bulkCreate(projectId, subjects, statusId);
+  async bulkCreate(projectId: number, subjects: string[], statusId?: number): Promise<EpicSummary[]> {
+    const raw = await this.repo.bulkCreate(projectId, subjects, statusId) as Record<string, unknown>[];
+    return raw.map((e) => this.toSummary(e));
   }
 
   // Tell Don't Ask: el servicio obtiene la versión actual e internamente aplica el cambio
@@ -160,8 +161,9 @@ export class EpicService implements IEpicReader, IEpicWriter, IEpicRelationManag
     return this.repo.unlinkUserStory(epicId, userStoryId);
   }
 
-  async bulkLinkUserStories(epicId: number, userStoryIds: number[]): Promise<unknown> {
-    return this.repo.bulkLinkUserStories(epicId, userStoryIds);
+  async bulkLinkUserStories(epicId: number, userStoryIds: number[]): Promise<{ epic: number; user_story: number }[]> {
+    const raw = await this.repo.bulkLinkUserStories(epicId, userStoryIds) as Record<string, unknown>[];
+    return raw.map((r) => ({ epic: r.epic as number, user_story: r.user_story as number }));
   }
 
   async listRelatedUserStories(epicId: number): Promise<unknown> {

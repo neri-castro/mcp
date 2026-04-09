@@ -134,14 +134,15 @@ export class TaskService {
     usId?: number,
     milestoneId?: number,
     statusId?: number
-  ): Promise<unknown> {
-    return this.repo.bulkCreate({
+  ): Promise<TaskSummary[]> {
+    const raw = await this.repo.bulkCreate({
       project_id: projectId,
       us_id: usId,
       milestone_id: milestoneId,
       bulk_tasks: subjects.join('\n'),
       status_id: statusId,
-    });
+    }) as Record<string, unknown>[];
+    return raw.map((t) => this.toSummary(t));
   }
 
   // Tell Don't Ask

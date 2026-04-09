@@ -152,8 +152,9 @@ export class UserStoryService {
     return this.repo.delete(id);
   }
 
-  async bulkCreate(projectId: number, subjects: string[], statusId?: number): Promise<unknown> {
-    return this.repo.bulkCreate(projectId, subjects, statusId);
+  async bulkCreate(projectId: number, subjects: string[], statusId?: number): Promise<UserStorySummary[]> {
+    const raw = await this.repo.bulkCreate(projectId, subjects, statusId) as Record<string, unknown>[];
+    return raw.map((s) => this.toSummary(s));
   }
 
   // Tell Don't Ask: obtiene la versión y aplica el cambio internamente
