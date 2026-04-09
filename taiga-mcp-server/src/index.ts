@@ -726,7 +726,8 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
     case 'taiga_history_get':
       return historyService.getHistory(
         args.entity_type as 'userstory' | 'task' | 'issue' | 'wiki' | 'epic',
-        args.entity_id as number
+        args.entity_id as number,
+        args.limit as number | undefined
       );
 
     case 'taiga_comment_add':

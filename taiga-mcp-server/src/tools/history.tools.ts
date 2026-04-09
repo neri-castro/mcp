@@ -5,10 +5,12 @@ const entityTypeSchema = z.enum(['userstory', 'task', 'issue', 'wiki', 'epic'])
 
 export const historyToolSchemas = {
   taiga_history_get: {
-    description: 'Obtiene el historial completo de cambios y comentarios de una entidad (HU, tarea, issue, wiki, épica).',
+    description: 'Obtiene el historial de cambios y comentarios de una entidad (HU, tarea, issue, wiki, épica).',
     inputSchema: z.object({
       entity_type: entityTypeSchema,
       entity_id: z.number(),
+      limit: z.number().int().positive().max(200).optional().default(50)
+        .describe('Máximo de entradas a devolver (default 50, máximo 200)'),
     }),
   },
 
