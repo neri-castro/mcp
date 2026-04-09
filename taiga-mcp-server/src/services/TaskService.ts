@@ -2,6 +2,7 @@
 import { TaskRepository, CreateTaskDTO, EditTaskDTO } from '../repositories/TaskRepository.js';
 import { withCurrentVersion } from '../utils/occ.js';
 import { logger } from '../utils/logger.js';
+import { FiltersDataSummary, toFiltersDataSummary } from './filtersData.js';
 
 interface TaskSummary {
   id: number;
@@ -40,7 +41,12 @@ export class TaskService {
 
   async list(projectId: number, filters?: Record<string, unknown>): Promise<TaskSummary[]> {
     const tasks = await this.repo.list({ project: projectId, ...filters }) as Record<string, unknown>[];
-    return tasks.map((t) => ({
+    return tasks.map((t) => this.toSummary(t));
+  }
+
+  private toSummary(t: Record<string, unknown>): TaskSummary {
+    const assignedInfo = t.assigned_to_extra_info as { full_name_display?: string } | null;
+    return {
       id: t.id as number,
       ref: t.ref as number,
       subject: t.subject as string,
@@ -50,13 +56,13 @@ export class TaskService {
       user_story: t.user_story as number | null,
       milestone: t.milestone as number | null,
       assigned_to: t.assigned_to as number | null,
-      assigned_to_extra_info: t.assigned_to_extra_info as TaskSummary['assigned_to_extra_info'],
+      assigned_to_extra_info: assignedInfo ? { full_name_display: assignedInfo.full_name_display ?? '' } : null,
       is_closed: t.is_closed as boolean,
       tags: t.tags as unknown[],
       due_date: t.due_date as string | null,
       created_date: t.created_date as string,
       modified_date: t.modified_date as string,
-    }));
+    };
   }
 
   async get(id: number): Promise<TaskDetail> {
@@ -107,13 +113,15 @@ export class TaskService {
     };
   }
 
-  async create(dto: CreateTaskDTO): Promise<unknown> {
+  async create(dto: CreateTaskDTO): Promise<TaskSummary> {
     logger.info({ projectId: dto.project, subject: dto.subject }, 'Creando tarea');
-    return this.repo.create(dto);
+    const raw = await this.repo.create(dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
-  async edit(id: number, dto: EditTaskDTO): Promise<unknown> {
-    return this.repo.edit(id, dto);
+  async edit(id: number, dto: EditTaskDTO): Promise<TaskSummary> {
+    const raw = await this.repo.edit(id, dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
   async delete(id: number): Promise<void> {
@@ -163,7 +171,8 @@ export class TaskService {
     return this.repo.listAttachments(taskId);
   }
 
-  async getFiltersData(projectId: number): Promise<unknown> {
-    return this.repo.getFiltersData(projectId);
+  async getFiltersData(projectId: number): Promise<FiltersDataSummary> {
+    const raw = await this.repo.getFiltersData(projectId) as Record<string, unknown>;
+    return toFiltersDataSummary(raw);
   }
 }

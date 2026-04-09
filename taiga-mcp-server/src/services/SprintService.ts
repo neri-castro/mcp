@@ -80,13 +80,31 @@ export class SprintService {
     };
   }
 
-  async create(dto: CreateMilestoneDTO): Promise<unknown> {
+  async create(dto: CreateMilestoneDTO): Promise<SprintSummary> {
     logger.info({ projectId: dto.project, name: dto.name }, 'Creando sprint');
-    return this.milestoneRepo.create(dto);
+    const raw = await this.milestoneRepo.create(dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
-  async edit(sprintId: number, dto: EditMilestoneDTO): Promise<unknown> {
-    return this.milestoneRepo.edit(sprintId, dto);
+  async edit(sprintId: number, dto: EditMilestoneDTO): Promise<SprintSummary> {
+    const raw = await this.milestoneRepo.edit(sprintId, dto) as Record<string, unknown>;
+    return this.toSummary(raw);
+  }
+
+  private toSummary(s: Record<string, unknown>): SprintSummary {
+    return {
+      id: s.id as number,
+      name: s.name as string,
+      slug: s.slug as string,
+      project: s.project as number,
+      estimated_start: s.estimated_start as string | null,
+      estimated_finish: s.estimated_finish as string | null,
+      closed: s.closed as boolean,
+      total_points: s.total_points as number | null,
+      completed_points: s.completed_points as number | null,
+      created_date: s.created_date as string,
+      modified_date: s.modified_date as string,
+    };
   }
 
   async delete(sprintId: number): Promise<void> {

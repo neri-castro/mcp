@@ -59,13 +59,15 @@ export class WikiService {
     };
   }
 
-  async create(dto: CreateWikiPageDTO): Promise<unknown> {
+  async create(dto: CreateWikiPageDTO): Promise<WikiPageDetail> {
     logger.info({ projectId: dto.project, slug: dto.slug }, 'Creando página wiki');
-    return this.repo.create(dto);
+    const raw = await this.repo.create(dto) as Record<string, unknown>;
+    return this.toDetail(raw);
   }
 
-  async edit(wikiId: number, dto: EditWikiPageDTO): Promise<unknown> {
-    return this.repo.edit(wikiId, dto);
+  async edit(wikiId: number, dto: EditWikiPageDTO): Promise<WikiPageDetail> {
+    const raw = await this.repo.edit(wikiId, dto) as Record<string, unknown>;
+    return this.toDetail(raw);
   }
 
   async delete(wikiId: number): Promise<void> {

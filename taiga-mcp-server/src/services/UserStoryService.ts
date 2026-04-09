@@ -47,7 +47,12 @@ export class UserStoryService {
 
   async list(projectId: number, filters?: Record<string, unknown>): Promise<UserStorySummary[]> {
     const stories = await this.repo.list({ project: projectId, ...filters }) as Record<string, unknown>[];
-    return stories.map((s) => ({
+    return stories.map((s) => this.toSummary(s));
+  }
+
+  private toSummary(s: Record<string, unknown>): UserStorySummary {
+    const assignedInfo = s.assigned_to_extra_info as { full_name_display?: string } | null;
+    return {
       id: s.id as number,
       ref: s.ref as number,
       subject: s.subject as string,
@@ -57,13 +62,13 @@ export class UserStoryService {
       milestone: s.milestone as number | null,
       milestone_name: s.milestone_name as string | null,
       assigned_to: s.assigned_to as number | null,
-      assigned_to_extra_info: s.assigned_to_extra_info as UserStorySummary['assigned_to_extra_info'],
+      assigned_to_extra_info: assignedInfo ? { full_name_display: assignedInfo.full_name_display ?? '' } : null,
       is_closed: s.is_closed as boolean,
       total_points: s.total_points as number | null,
       tags: s.tags as unknown[],
       created_date: s.created_date as string,
       modified_date: s.modified_date as string,
-    }));
+    };
   }
 
   async get(id: number): Promise<UserStoryDetail> {
@@ -132,13 +137,15 @@ export class UserStoryService {
     };
   }
 
-  async create(dto: CreateUserStoryDTO): Promise<unknown> {
+  async create(dto: CreateUserStoryDTO): Promise<UserStorySummary> {
     logger.info({ projectId: dto.project, subject: dto.subject }, 'Creando Historia de Usuario');
-    return this.repo.create(dto);
+    const raw = await this.repo.create(dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
-  async edit(id: number, dto: EditUserStoryDTO): Promise<unknown> {
-    return this.repo.edit(id, dto);
+  async edit(id: number, dto: EditUserStoryDTO): Promise<UserStorySummary> {
+    const raw = await this.repo.edit(id, dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
   async delete(id: number): Promise<void> {

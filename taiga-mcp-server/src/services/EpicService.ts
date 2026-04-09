@@ -1,6 +1,7 @@
 import { EpicRepository, CreateEpicDTO, EditEpicDTO } from '../repositories/EpicRepository.js';
 import { withCurrentVersion } from '../utils/occ.js';
 import { logger } from '../utils/logger.js';
+import { FiltersDataSummary, toFiltersDataSummary } from './filtersData.js';
 
 export interface IEpicReader {
   list(projectId: number, filters?: Record<string, unknown>): Promise<unknown>;
@@ -56,7 +57,12 @@ export class EpicService implements IEpicReader, IEpicWriter, IEpicRelationManag
 
   async list(projectId: number, filters?: Record<string, unknown>): Promise<EpicSummary[]> {
     const epics = await this.repo.list({ project: projectId, ...filters }) as Record<string, unknown>[];
-    return epics.map((e) => ({
+    return epics.map((e) => this.toSummary(e));
+  }
+
+  private toSummary(e: Record<string, unknown>): EpicSummary {
+    const assignedInfo = e.assigned_to_extra_info as { full_name_display?: string } | null;
+    return {
       id: e.id as number,
       ref: e.ref as number,
       subject: e.subject as string,
@@ -64,13 +70,13 @@ export class EpicService implements IEpicReader, IEpicWriter, IEpicRelationManag
       status_extra_info: e.status_extra_info as EpicSummary['status_extra_info'],
       project: e.project as number,
       assigned_to: e.assigned_to as number | null,
-      assigned_to_extra_info: e.assigned_to_extra_info as EpicSummary['assigned_to_extra_info'],
+      assigned_to_extra_info: assignedInfo ? { full_name_display: assignedInfo.full_name_display ?? '' } : null,
       is_closed: e.is_closed as boolean,
       color: e.color as string,
       tags: e.tags as unknown[],
       created_date: e.created_date as string,
       modified_date: e.modified_date as string,
-    }));
+    };
   }
 
   async get(id: number): Promise<EpicDetail> {
@@ -118,13 +124,15 @@ export class EpicService implements IEpicReader, IEpicWriter, IEpicRelationManag
     };
   }
 
-  async create(dto: CreateEpicDTO): Promise<unknown> {
+  async create(dto: CreateEpicDTO): Promise<EpicSummary> {
     logger.info({ projectId: dto.project, subject: dto.subject }, 'Creando épica');
-    return this.repo.create(dto);
+    const raw = await this.repo.create(dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
-  async edit(id: number, dto: EditEpicDTO): Promise<unknown> {
-    return this.repo.edit(id, dto);
+  async edit(id: number, dto: EditEpicDTO): Promise<EpicSummary> {
+    const raw = await this.repo.edit(id, dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
   async delete(id: number): Promise<void> {
@@ -168,7 +176,8 @@ export class EpicService implements IEpicReader, IEpicWriter, IEpicRelationManag
     return this.repo.listAttachments(epicId);
   }
 
-  async getFiltersData(projectId: number): Promise<unknown> {
-    return this.repo.getFiltersData(projectId);
+  async getFiltersData(projectId: number): Promise<FiltersDataSummary> {
+    const raw = await this.repo.getFiltersData(projectId) as Record<string, unknown>;
+    return toFiltersDataSummary(raw);
   }
 }

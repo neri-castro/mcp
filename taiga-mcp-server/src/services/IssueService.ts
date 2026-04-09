@@ -1,6 +1,7 @@
 import { IssueRepository, CreateIssueDTO, EditIssueDTO } from '../repositories/IssueRepository.js';
 import { withCurrentVersion } from '../utils/occ.js';
 import { logger } from '../utils/logger.js';
+import { FiltersDataSummary, toFiltersDataSummary } from './filtersData.js';
 
 interface IssueSummary {
   id: number;
@@ -42,7 +43,12 @@ export class IssueService {
 
   async list(projectId: number, filters?: Record<string, unknown>): Promise<IssueSummary[]> {
     const issues = await this.repo.list({ project: projectId, ...filters }) as Record<string, unknown>[];
-    return issues.map((i) => ({
+    return issues.map((i) => this.toSummary(i));
+  }
+
+  private toSummary(i: Record<string, unknown>): IssueSummary {
+    const assignedInfo = i.assigned_to_extra_info as { full_name_display?: string } | null;
+    return {
       id: i.id as number,
       ref: i.ref as number,
       subject: i.subject as string,
@@ -56,13 +62,13 @@ export class IssueService {
       severity_extra_info: i.severity_extra_info as IssueSummary['severity_extra_info'],
       project: i.project as number,
       assigned_to: i.assigned_to as number | null,
-      assigned_to_extra_info: i.assigned_to_extra_info as IssueSummary['assigned_to_extra_info'],
+      assigned_to_extra_info: assignedInfo ? { full_name_display: assignedInfo.full_name_display ?? '' } : null,
       is_closed: i.is_closed as boolean,
       tags: i.tags as unknown[],
       due_date: i.due_date as string | null,
       created_date: i.created_date as string,
       modified_date: i.modified_date as string,
-    }));
+    };
   }
 
   async get(id: number): Promise<IssueDetail> {
@@ -110,13 +116,15 @@ export class IssueService {
     };
   }
 
-  async create(dto: CreateIssueDTO): Promise<unknown> {
+  async create(dto: CreateIssueDTO): Promise<IssueSummary> {
     logger.info({ projectId: dto.project, subject: dto.subject }, 'Creando issue');
-    return this.repo.create(dto);
+    const raw = await this.repo.create(dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
-  async edit(id: number, dto: EditIssueDTO): Promise<unknown> {
-    return this.repo.edit(id, dto);
+  async edit(id: number, dto: EditIssueDTO): Promise<IssueSummary> {
+    const raw = await this.repo.edit(id, dto) as Record<string, unknown>;
+    return this.toSummary(raw);
   }
 
   async delete(id: number): Promise<void> {
@@ -179,7 +187,8 @@ export class IssueService {
     return this.repo.listAttachments(issueId);
   }
 
-  async getFiltersData(projectId: number): Promise<unknown> {
-    return this.repo.getFiltersData(projectId);
+  async getFiltersData(projectId: number): Promise<FiltersDataSummary> {
+    const raw = await this.repo.getFiltersData(projectId) as Record<string, unknown>;
+    return toFiltersDataSummary(raw);
   }
 }

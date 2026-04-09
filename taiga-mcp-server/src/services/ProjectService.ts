@@ -108,13 +108,15 @@ export class ProjectService {
     };
   }
 
-  async create(dto: CreateProjectDTO): Promise<unknown> {
+  async create(dto: CreateProjectDTO): Promise<ProjectDetail> {
     logger.info({ name: dto.name }, 'Creando proyecto');
-    return this.repo.create(dto);
+    const raw = await this.repo.create(dto) as Record<string, unknown>;
+    return this.toDetail(raw);
   }
 
-  async edit(id: number, dto: EditProjectDTO): Promise<unknown> {
-    return this.repo.edit(id, dto);
+  async edit(id: number, dto: EditProjectDTO): Promise<ProjectDetail> {
+    const raw = await this.repo.edit(id, dto) as Record<string, unknown>;
+    return this.toDetail(raw);
   }
 
   async delete(id: number): Promise<void> {
