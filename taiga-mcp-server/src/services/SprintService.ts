@@ -21,6 +21,11 @@ interface SprintSummary {
   modified_date: string;
 }
 
+interface SprintDetail extends SprintSummary {
+  user_stories: { id: number; ref: number; subject: string; status_name: string | null; is_closed: boolean; assigned_to_name: string | null }[];
+  total_watchers: number;
+}
+
 export class SprintService {
   constructor(
     private readonly milestoneRepo: MilestoneRepository,
@@ -44,8 +49,35 @@ export class SprintService {
     }));
   }
 
-  async get(sprintId: number): Promise<unknown> {
-    return this.milestoneRepo.get(sprintId);
+  async get(sprintId: number): Promise<SprintDetail> {
+    const raw = await this.milestoneRepo.get(sprintId) as Record<string, unknown>;
+    const userStories = (raw.user_stories as Record<string, unknown>[] | null) ?? [];
+    return {
+      id: raw.id as number,
+      name: raw.name as string,
+      slug: raw.slug as string,
+      project: raw.project as number,
+      estimated_start: raw.estimated_start as string | null,
+      estimated_finish: raw.estimated_finish as string | null,
+      closed: raw.closed as boolean,
+      total_points: raw.total_points as number | null,
+      completed_points: raw.completed_points as number | null,
+      created_date: raw.created_date as string,
+      modified_date: raw.modified_date as string,
+      total_watchers: raw.total_watchers as number ?? 0,
+      user_stories: userStories.map((us) => {
+        const si = us.status_extra_info as { name?: string } | null;
+        const ai = us.assigned_to_extra_info as { full_name_display?: string } | null;
+        return {
+          id: us.id as number,
+          ref: us.ref as number,
+          subject: us.subject as string,
+          status_name: si?.name ?? null,
+          is_closed: us.is_closed as boolean,
+          assigned_to_name: ai?.full_name_display ?? null,
+        };
+      }),
+    };
   }
 
   async create(dto: CreateMilestoneDTO): Promise<unknown> {

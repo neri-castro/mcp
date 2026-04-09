@@ -21,6 +21,20 @@ interface TaskSummary {
   modified_date: string;
 }
 
+interface TaskDetail extends TaskSummary {
+  description: string;
+  finish_date: string | null;
+  is_blocked: boolean;
+  blocked_note: string;
+  total_comments: number;
+  total_attachments: number;
+  total_watchers: number;
+  total_voters: number;
+  version: number;
+  user_story_extra_info: { id: number; ref: number; subject: string } | null;
+  neighbors: { previous: { id: number; ref: number; subject: string } | null; next: { id: number; ref: number; subject: string } | null };
+}
+
 export class TaskService {
   constructor(private readonly repo: TaskRepository) {}
 
@@ -45,12 +59,52 @@ export class TaskService {
     }));
   }
 
-  async get(id: number): Promise<unknown> {
-    return this.repo.get(id);
+  async get(id: number): Promise<TaskDetail> {
+    const raw = await this.repo.get(id) as Record<string, unknown>;
+    return this.toDetail(raw);
   }
 
-  async getByRef(ref: number, projectId: number): Promise<unknown> {
-    return this.repo.getByRef(ref, projectId);
+  async getByRef(ref: number, projectId: number): Promise<TaskDetail> {
+    const raw = await this.repo.getByRef(ref, projectId) as Record<string, unknown>;
+    return this.toDetail(raw);
+  }
+
+  private toDetail(r: Record<string, unknown>): TaskDetail {
+    const statusInfo = r.status_extra_info as TaskSummary['status_extra_info'];
+    const assignedInfo = r.assigned_to_extra_info as { full_name_display?: string } | null;
+    const usInfo = r.user_story_extra_info as { id?: number; ref?: number; subject?: string } | null;
+    const neighbors = r.neighbors as { previous?: Record<string, unknown> | null; next?: Record<string, unknown> | null } | null;
+    return {
+      id: r.id as number,
+      ref: r.ref as number,
+      subject: r.subject as string,
+      status: r.status as number | null,
+      status_extra_info: statusInfo,
+      project: r.project as number,
+      user_story: r.user_story as number | null,
+      milestone: r.milestone as number | null,
+      assigned_to: r.assigned_to as number | null,
+      assigned_to_extra_info: assignedInfo ? { full_name_display: assignedInfo.full_name_display ?? '' } : null,
+      is_closed: r.is_closed as boolean,
+      tags: r.tags as unknown[],
+      due_date: r.due_date as string | null,
+      created_date: r.created_date as string,
+      modified_date: r.modified_date as string,
+      description: r.description as string ?? '',
+      finish_date: r.finish_date as string | null,
+      is_blocked: r.is_blocked as boolean,
+      blocked_note: r.blocked_note as string ?? '',
+      total_comments: r.total_comments as number ?? 0,
+      total_attachments: r.total_attachments as number ?? 0,
+      total_watchers: r.total_watchers as number ?? 0,
+      total_voters: r.total_voters as number ?? 0,
+      version: r.version as number,
+      user_story_extra_info: usInfo?.id != null ? { id: usInfo.id, ref: usInfo.ref!, subject: usInfo.subject! } : null,
+      neighbors: {
+        previous: neighbors?.previous ? { id: neighbors.previous.id as number, ref: neighbors.previous.ref as number, subject: neighbors.previous.subject as string } : null,
+        next: neighbors?.next ? { id: neighbors.next.id as number, ref: neighbors.next.ref as number, subject: neighbors.next.subject as string } : null,
+      },
+    };
   }
 
   async create(dto: CreateTaskDTO): Promise<unknown> {

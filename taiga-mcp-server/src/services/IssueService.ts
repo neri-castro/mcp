@@ -24,6 +24,19 @@ interface IssueSummary {
   modified_date: string;
 }
 
+interface IssueDetail extends IssueSummary {
+  description: string;
+  finish_date: string | null;
+  is_blocked: boolean;
+  blocked_note: string;
+  total_comments: number;
+  total_attachments: number;
+  total_watchers: number;
+  total_voters: number;
+  version: number;
+  neighbors: { previous: { id: number; ref: number; subject: string } | null; next: { id: number; ref: number; subject: string } | null };
+}
+
 export class IssueService {
   constructor(private readonly repo: IssueRepository) {}
 
@@ -52,8 +65,49 @@ export class IssueService {
     }));
   }
 
-  async get(id: number): Promise<unknown> {
-    return this.repo.get(id);
+  async get(id: number): Promise<IssueDetail> {
+    const raw = await this.repo.get(id) as Record<string, unknown>;
+    return this.toDetail(raw);
+  }
+
+  private toDetail(r: Record<string, unknown>): IssueDetail {
+    const statusInfo = r.status_extra_info as IssueSummary['status_extra_info'];
+    const assignedInfo = r.assigned_to_extra_info as { full_name_display?: string } | null;
+    const neighbors = r.neighbors as { previous?: Record<string, unknown> | null; next?: Record<string, unknown> | null } | null;
+    return {
+      id: r.id as number,
+      ref: r.ref as number,
+      subject: r.subject as string,
+      status: r.status as number | null,
+      status_extra_info: statusInfo,
+      type: r.type as number | null,
+      type_extra_info: r.type_extra_info as IssueSummary['type_extra_info'],
+      priority: r.priority as number | null,
+      priority_extra_info: r.priority_extra_info as IssueSummary['priority_extra_info'],
+      severity: r.severity as number | null,
+      severity_extra_info: r.severity_extra_info as IssueSummary['severity_extra_info'],
+      project: r.project as number,
+      assigned_to: r.assigned_to as number | null,
+      assigned_to_extra_info: assignedInfo ? { full_name_display: assignedInfo.full_name_display ?? '' } : null,
+      is_closed: r.is_closed as boolean,
+      tags: r.tags as unknown[],
+      due_date: r.due_date as string | null,
+      created_date: r.created_date as string,
+      modified_date: r.modified_date as string,
+      description: r.description as string ?? '',
+      finish_date: r.finish_date as string | null,
+      is_blocked: r.is_blocked as boolean,
+      blocked_note: r.blocked_note as string ?? '',
+      total_comments: r.total_comments as number ?? 0,
+      total_attachments: r.total_attachments as number ?? 0,
+      total_watchers: r.total_watchers as number ?? 0,
+      total_voters: r.total_voters as number ?? 0,
+      version: r.version as number,
+      neighbors: {
+        previous: neighbors?.previous ? { id: neighbors.previous.id as number, ref: neighbors.previous.ref as number, subject: neighbors.previous.subject as string } : null,
+        next: neighbors?.next ? { id: neighbors.next.id as number, ref: neighbors.next.ref as number, subject: neighbors.next.subject as string } : null,
+      },
+    };
   }
 
   async create(dto: CreateIssueDTO): Promise<unknown> {
