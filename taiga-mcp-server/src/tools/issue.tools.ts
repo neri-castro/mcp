@@ -121,6 +121,13 @@ Para bugs incluir en la descripción:
     }),
   },
 
+  taiga_issue_list_attachments: {
+    description: 'Lista todos los archivos adjuntos de un issue.',
+    inputSchema: z.object({
+      issue_id: z.number(),
+    }),
+  },
+
   taiga_issue_watch: {
     description: 'Suscribe al usuario autenticado a notificaciones del issue.',
     inputSchema: z.object({

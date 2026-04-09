@@ -420,6 +420,9 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
     case 'taiga_task_add_attachment':
       return { message: 'Adjuntos requieren acceso al filesystem. Usa la API directamente con multipart/form-data.' };
 
+    case 'taiga_task_list_attachments':
+      return taskService.listAttachments(args.task_id as number);
+
     case 'taiga_task_watch':
       await taskService.watch(args.task_id as number);
       return { watching: true };
@@ -485,6 +488,9 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
 
     case 'taiga_issue_add_attachment':
       return { message: 'Adjuntos requieren acceso al filesystem. Usa la API directamente con multipart/form-data.' };
+
+    case 'taiga_issue_list_attachments':
+      return issueService.listAttachments(args.issue_id as number);
 
     case 'taiga_issue_watch':
       await issueService.watch(args.issue_id as number);
